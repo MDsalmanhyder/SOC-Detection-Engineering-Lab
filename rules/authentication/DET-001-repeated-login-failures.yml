@@ -1,0 +1,77 @@
+id: DET-001
+uuid: a61e1b12-9c3a-4db5-9e67-d1a1b02b55f1
+title: Repeated Authentication Failures (Possible Password Guessing / Brute Force)
+status: production
+version: 1.2.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects an abnormal volume of authentication failures targeting a single account or originating
+  from a single source IP within a sliding time window. Often indicative of password guessing,
+  brute force attacks, or credential stuffing attempts.
+
+hypothesis: >
+  An adversary attempting to gain initial access or move laterally will generate multiple failed logon
+  events when guessing credentials against SSH, Windows Logon, or service endpoints.
+
+logsource:
+  category: authentication
+  product: linux_auth, windows_security
+  service: sshd, winlogon
+
+detection:
+  selection:
+    event_type: authentication
+    action: login_failed
+    status: failure
+  correlation:
+    type: threshold
+    group_by:
+      - source_ip
+      - user
+    window_seconds: 300
+    threshold: 5
+  condition: selection and count() >= 5
+
+threshold:
+  default_count: 5
+  time_window_seconds: 300
+  tunable: true
+  min_val: 3
+  max_val: 50
+
+suppression:
+  window_seconds: 600
+  keys:
+    - source_ip
+    - user
+
+mitre_attack:
+  tactic: Credential Access
+  technique_id: T1110.001
+  technique_name: Password Guessing
+  subtechnique_id: T1110.001
+  url: https://attack.mitre.org/techniques/T1110/001/
+
+level: medium
+severity_rationale: >
+  Failed logins do not prove compromise, but high frequency strongly indicates active adversary probing
+  or misconfigured services attempting authenticated operations.
+
+falsepositives:
+  - Legitimate user forgetting password after a mandatory password rotation
+  - Automated service account or backup job with expired service credentials
+  - Network vulnerability scanner performing authorized security assessment
+
+limitations:
+  - Low-and-slow password spraying (e.g., 1 attempt per hour per account) bypasses short time-window thresholds
+  - Adversary rotating source IP addresses using proxy networks or Tor
+  - Lack of visibility into application-level web logins if only OS auth logs are monitored
+
+investigation:
+  steps:
+    - "1. Identify the source IP address: Is it internal (workstation/server) or an untrusted external IP?"
+    - "2. Check if the source IP is targeting multiple accounts (password spray) or single account (targeted brute force)."
+    - "3. Check the targeted account: Is it a privileged account (root, Administrator) or service account?"
+    - "4. Review whether any subsequent login from this source IP succeeded within the next 30 minutes."
+    - "5. If unauthorized, block the source IP at the firewall and evaluate account lockout status."

@@ -1,0 +1,69 @@
+id: DET-003
+uuid: c83a3d34-1e5c-4fd7-be89-f3c3d24d77a3
+title: Suspicious Process Execution (LOLBAS / Living-off-the-Land Binaries)
+status: production
+version: 1.3.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects the execution of known Living-Off-The-Land Binaries and Scripts (LOLBAS) with parameters
+  frequently abused by adversaries for downloading payloads, recon, or discovery (e.g., certutil.exe
+  downloading remote files, bitsadmin, or discovery commands spawned by unexpected web servers).
+
+hypothesis: >
+  Adversaries utilize native, pre-installed administrative utilities (certutil, bitsadmin, mshta, rundll32)
+  to evade signature-based detection while staging payloads or conducting initial discovery.
+
+logsource:
+  category: process_creation
+  product: sysmon, linux_auth
+  service: endpoint
+
+detection:
+  selection_lolbas:
+    event_type: process_creation
+    process_name:
+      - "certutil.exe"
+      - "certutil"
+      - "bitsadmin.exe"
+      - "mshta.exe"
+      - "curl"
+      - "wget"
+  selection_patterns:
+    command_line|contains:
+      - "-urlcache"
+      - "http://"
+      - "https://"
+      - "-split"
+      - "/transfer"
+      - "javascript:"
+      - "vbscript:"
+  condition: selection_lolbas and selection_patterns
+
+mitre_attack:
+  tactic: Defense Evasion / Execution
+  technique_id: T1059.003
+  technique_name: Windows Command Shell / LOLBAS Abuse
+  subtechnique_id: T1059.003
+  url: https://attack.mitre.org/techniques/T1059/003/
+
+level: high
+severity_rationale: >
+  Certutil and bitsadmin should virtually never download external URLs in normal business workstations.
+  URL arguments with certutil are high-confidence indicators of malicious staging.
+
+falsepositives:
+  - Custom internal software deployment batch scripts written by legacy enterprise IT
+  - PKI certificate enrollments utilizing certutil without download flags (filtered by string matching)
+
+limitations:
+  - Adversaries renaming the binary executable to evade process name checks (mitigated by checking original file name in Sysmon)
+  - Obfuscation or string insertion (e.g. `c^e^r^t^u^t^i^l`) in cmd.exe
+
+investigation:
+  steps:
+    - "1. Examine the full command line to determine the target URL or destination IP."
+    - "2. Identify parent process (e.g. cmd.exe, powershell.exe, w3wp.exe, or word.exe)."
+    - "3. Check whether the downloaded file was written to disk (Sysmon Event ID 11 or temp folders)."
+    - "4. Search proxy and DNS logs for outbound connections from the host to the external domain."
+    - "5. Submit downloaded file hash to threat intelligence feeds (VirusTotal/internal sandboxes)."

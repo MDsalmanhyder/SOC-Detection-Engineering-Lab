@@ -1,0 +1,68 @@
+id: DET-006
+uuid: fb6d6067-4b8f-4aa0-e1b2-26f6057000d6
+title: Unauthorized Privilege Group Modification (Privilege Escalation / Persistence)
+status: production
+version: 1.2.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects the addition of a user account to high-privileged security groups, such as Domain Admins,
+  Administrators, Enterprise Admins, or Linux sudo / wheel groups.
+
+hypothesis: >
+  Adversaries with local execution privileges seek persistence and elevated rights by adding compromise
+  accounts or newly minted backdoor users into high-privilege administrative groups.
+
+logsource:
+  category: privilege_change
+  product: windows_security, linux_auth
+  service: security, usermod
+
+detection:
+  selection_group:
+    event_type: privilege_change
+    action: group_member_added
+    target_group|contains:
+      - "Admin"
+      - "Domain Admins"
+      - "Enterprise Admins"
+      - "sudo"
+      - "wheel"
+      - "root"
+  selection_cmd:
+    event_type: process_creation
+    command_line|contains:
+      - "net localgroup administrators /add"
+      - "net group \"Domain Admins\" /add"
+      - "usermod -aG sudo"
+      - "usermod -aG wheel"
+      - "gpasswd -a"
+  condition: selection_group or selection_cmd
+
+mitre_attack:
+  tactic: Privilege Escalation / Persistence
+  technique_id: T1098
+  technique_name: "Account Manipulation: Additional Cloud or Group Privileges"
+  subtechnique_id: T1098
+  url: https://attack.mitre.org/techniques/T1098/
+
+level: high
+severity_rationale: >
+  Administrative group additions grant full authority over host or domain resources. Unexpected changes
+  often indicate malicious persistence establishment or unauthorized privilege escalation.
+
+falsepositives:
+  - Legitimate IT helpdesk onboarding an authorized technician into local administrator group
+  - Devops deployment script configuring a dedicated runner account
+
+limitations:
+  - Shadow admin rights (e.g. delegated ACLs in Active Directory without direct group membership) bypass group membership logging
+  - Token manipulation in memory without modifying persistent group memberships
+
+investigation:
+  steps:
+    - "1. Review who added the user (SubjectUserName / executing user)."
+    - "2. Verify whether a corresponding change management or IT ticketing request exists."
+    - "3. Investigate the newly privileged user account: was it recently created or dormant?"
+    - "4. Inspect logon activity for both the initiator and the target user."
+    - "5. If unauthorized, immediately remove the account from the privileged group and disable it."

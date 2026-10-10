@@ -1,0 +1,65 @@
+id: DET-005
+uuid: ea5c5f56-3a7e-4ff9-d0a1-15e5f46f99c5
+title: Security Logging Disabled or Audit Log Cleared
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects attempts to impair defense telemetry, including Windows audit log clearing (Event ID 1102),
+  stopping security services (auditd, WinDefend, Sysmon), or executing utilities like wevtutil to erase event tracks.
+
+hypothesis: >
+  An adversary seeking defense evasion will attempt to disable telemetry agents or purge event log
+  repositories to conceal their footprints before exfiltration or lateral expansion.
+
+logsource:
+  category: security_log_tampering
+  product: windows_security, sysmon, linux_auth
+  service: eventlog, systemd
+
+detection:
+  selection_cleared:
+    event_type: security_log_tampering
+    action:
+      - "audit_log_cleared"
+      - "service_stopped"
+  selection_command_tampering:
+    event_type: process_creation
+    command_line|contains:
+      - "wevtutil cl"
+      - "wevtutil.exe cl"
+      - "Clear-EventLog"
+      - "sc stop windefend"
+      - "sc stop sysmon"
+      - "systemctl stop auditd"
+      - "service auditd stop"
+  condition: selection_cleared or selection_command_tampering
+
+mitre_attack:
+  tactic: Defense Evasion
+  technique_id: T1562.001
+  technique_name: "Impair Defenses: Disable or Modify Tools"
+  subtechnique_id: T1562.001
+  url: https://attack.mitre.org/techniques/T1562/001/
+
+level: critical
+severity_rationale: >
+  Clearing security event logs or disabling audit daemons directly blinds the SOC. It is rarely done legitimately
+  without explicit change-management tickets and represents an immediate high-priority indicator of compromise.
+
+falsepositives:
+  - Authorized system re-imaging or decommission procedures performed by senior sysadmins
+  - Automated lab reset scripts in designated staging subnets
+
+limitations:
+  - If the adversary forcibly terminates the process via kernel driver or hard crashes the host, no clean log is emitted
+  - Direct registry tampering before service start
+
+investigation:
+  steps:
+    - "1. Confirm the user identity executing the command or triggering Event 1102."
+    - "2. Check surrounding activity: what actions were taken in the 10 minutes preceding the log clearance?"
+    - "3. Contact IT operations to verify if an authorized maintenance window is scheduled."
+    - "4. Immediately preserve memory and endpoint forensic artifacts prior to any reboot."
+    - "5. Quarantine the endpoint from the network."

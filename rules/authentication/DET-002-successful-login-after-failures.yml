@@ -1,0 +1,76 @@
+id: DET-002
+uuid: b72f2c23-0d4b-4ec6-af78-e2b2c13c66f2
+title: Successful Authentication Immediately Following Repeated Failures
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects a sequence where multiple failed authentication attempts are immediately followed by a
+  successful login for the same account within a short observation window. Highly indicative
+  of a successful brute-force compromise or credential stuffing breakthrough.
+
+hypothesis: >
+  An adversary conducting password guessing or credential validation succeeds when an authentication
+  failure burst transitions to a successful logon from the same source or targeting the same user.
+
+logsource:
+  category: authentication
+  product: linux_auth, windows_security
+  service: sshd, winlogon
+
+detection:
+  selection_failures:
+    event_type: authentication
+    action: login_failed
+    status: failure
+  selection_success:
+    event_type: authentication
+    action: login_success
+    status: success
+  correlation:
+    type: sequence
+    order: [selection_failures, selection_success]
+    group_by:
+      - user
+    window_seconds: 600
+    failure_threshold: 4
+  condition: count(selection_failures) >= 4 followed_by selection_success
+
+threshold:
+  default_failure_count: 4
+  time_window_seconds: 600
+  tunable: true
+
+suppression:
+  window_seconds: 900
+  keys:
+    - user
+
+mitre_attack:
+  tactic: Initial Access / Credential Access
+  technique_id: T1078
+  technique_name: Valid Accounts
+  subtechnique_id: T1078.003
+  url: https://attack.mitre.org/techniques/T1078/
+
+level: high
+severity_rationale: >
+  A successful login after multiple rapid failures represents a confirmed breakthrough where an attacker
+  has likely obtained valid credentials and now holds active access on the host.
+
+falsepositives:
+  - Legitimate user mistyping their complex password multiple times before entering the correct one
+  - Password manager filling outdated cached credentials before user manually overrides
+
+limitations:
+  - If the adversary uses one IP for probing and a separate clean residential proxy for the final login, IP-based correlation will miss the linkage unless grouped by user
+  - Multi-day intervals between password cracking and login will exceed correlation windows
+
+investigation:
+  steps:
+    - "1. Triage the affected account immediately: Is the user actively working or currently off-hours?"
+    - "2. Verify source IP geolocation and ASN: Is the successful login originating from a known employee VPN or foreign IP?"
+    - "3. Inspect post-login actions: Examine interactive shell commands, processes spawned, and network connections opened in the first 15 minutes."
+    - "4. Contact the user via out-of-band communication (phone/Slack) to confirm whether they experienced login issues."
+    - "5. If unauthorized, revoke active sessions immediately, reset credentials, and isolate host."

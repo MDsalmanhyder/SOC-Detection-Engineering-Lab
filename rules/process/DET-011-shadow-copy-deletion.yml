@@ -1,0 +1,67 @@
+id: DET-011
+uuid: 4a1b15bc-9ad4-4ff5-d607-7b4b50c5551b
+title: Shadow Copy Deletion or System Recovery Manipulation
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects the execution of commands designed to delete Volume Shadow Copies or disable Windows
+  System Recovery (vssadmin delete shadows, wmic shadowcopy delete, bcdedit /set recoveryenabled No),
+  a hallmark behavior of ransomware operators prior to encryption.
+
+hypothesis: >
+  Adversaries deploying ransomware delete volume shadow copies and disable automatic recovery
+  mechanisms to ensure victim organizations cannot restore encrypted files from local snapshots.
+
+logsource:
+  category: process_creation
+  product: sysmon, windows_security
+  service: vssadmin, bcdedit, wmic
+
+detection:
+  selection_tools:
+    event_type: process_creation
+    process_name:
+      - "vssadmin.exe"
+      - "vssadmin"
+      - "wmic.exe"
+      - "wmic"
+      - "bcdedit.exe"
+      - "bcdedit"
+      - "wbadmin.exe"
+  selection_commands:
+    command_line|contains:
+      - "delete shadows"
+      - "shadowcopy delete"
+      - "recoveryenabled no"
+      - "bootstatuspolicy ignoreallfailures"
+      - "delete catalog -quiet"
+  condition: selection_tools and selection_commands
+
+mitre_attack:
+  tactic: Impact / Defense Evasion
+  technique_id: T1490
+  technique_name: Inhibit System Recovery
+  subtechnique_id: T1490
+  url: https://attack.mitre.org/techniques/T1490/
+
+level: critical
+severity_rationale: >
+  Deleting volume shadow copies is rarely done outside of ransomware infections or destructive malware.
+  Immediate critical action is required to prevent widespread storage encryption.
+
+falsepositives:
+  - Rare legitimate disk cleanup or third-party backup software purging old snapshot checkpoints
+
+limitations:
+  - Direct VSS COM interface manipulation without invoking `vssadmin.exe`
+  - Hypervisor-level snapshot deletion
+
+investigation:
+  steps:
+    - "1. Treat as a suspected high-severity active ransomware incident."
+    - "2. Immediately isolate the affected endpoint from the local network."
+    - "3. Identify the parent process and user account executing the command."
+    - "4. Check for high-volume file renaming, `.locked` extensions, or ransom notes."
+    - "5. Alert SOC leadership and prepare incident response protocols."

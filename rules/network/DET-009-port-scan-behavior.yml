@@ -1,0 +1,74 @@
+id: DET-009
+uuid: 2e9f939a-7eb2-4dd3-b4e5-592938a333f9
+title: Port Scan Behavior (Network Service Discovery Probing)
+status: production
+version: 1.2.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects an internal or external source host rapidly probing multiple distinct destination ports
+  across a target host or subnet within a short correlation window.
+
+hypothesis: >
+  An adversary conducting discovery or lateral reconnaissance performs port scanning (Nmap, Masscan,
+  or custom scripts) to identify accessible network services and vulnerable listening daemons.
+
+logsource:
+  category: network_connection
+  product: zeek, sysmon, firewall
+  service: conn, netflow
+
+detection:
+  selection:
+    event_type: network_connection
+  correlation:
+    type: distinct_count
+    group_by:
+      - source_ip
+      - dest_ip
+    target_field: dest_port
+    window_seconds: 60
+    threshold: 10
+  condition: selection and count_distinct(dest_port) >= 10
+
+threshold:
+  default_distinct_ports: 10
+  time_window_seconds: 60
+  tunable: true
+  min_val: 5
+  max_val: 100
+
+suppression:
+  window_seconds: 300
+  keys:
+    - source_ip
+    - dest_ip
+
+mitre_attack:
+  tactic: Discovery
+  technique_id: T1046
+  technique_name: Network Service Discovery
+  subtechnique_id: T1046
+  url: https://attack.mitre.org/techniques/T1046/
+
+level: medium
+severity_rationale: >
+  Port scanning indicates early reconnaissance. While not yet an exploitation event, rapid probing across
+  multiple ports identifies attacker presence and scanning intent.
+
+falsepositives:
+  - Authorized vulnerability scanning appliances (Qualys, Nessus, Rapid7)
+  - Network monitoring tools conducting service discovery or health probes
+  - P2P file sharing or multiplayer gaming clients opening ephemeral sockets
+
+limitations:
+  - Slow stealth scans (e.g. Nmap `-T0` paranoid, one port every 5 minutes) bypass time-window thresholds
+  - Distributed port scans where multiple nodes probe 1 port each
+
+investigation:
+  steps:
+    - "1. Check source IP ownership: Is the source an approved security scanner or unknown host?"
+    - "2. Identify target IP: Is it a high-value domain controller, database, or external router?"
+    - "3. Check if any targeted ports responded with successful connections (ESTABLISHED vs SYN_SENT)."
+    - "4. Review host endpoint telemetry for the source IP to identify what binary initiated the scan."
+    - "5. If unauthorized, block the source IP and alert network operations."

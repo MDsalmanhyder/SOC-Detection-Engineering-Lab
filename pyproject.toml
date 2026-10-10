@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soc-detection-engineering-lab"
+version = "1.0.0"
+description = "A SOC Detection Engineering Lab for designing, testing, evaluating, and explaining security detections."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "SOC Detection Engineering Lab Team" }
+]
+keywords = [
+    "soc", "detection-engineering", "sigma", "mitre-attack", 
+    "siem", "cybersecurity", "threat-detection", "sysmon", "zeek"
+]
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn>=0.28.0",
+    "pydantic>=2.6.0",
+    "pyyaml>=6.0",
+    "pytest>=8.0.0",
+    "rich>=13.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0"
+]
+
+[project.scripts]
+soc-lab = "api.main:main"
+soc-benchmark = "evaluation.benchmark:main"
+soc-gen-data = "datasets.generate_datasets:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

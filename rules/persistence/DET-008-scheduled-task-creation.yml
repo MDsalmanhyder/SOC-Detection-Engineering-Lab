@@ -1,0 +1,74 @@
+id: DET-008
+uuid: 1d8f8289-6da1-4cc2-a3d4-4818279222f8
+title: Suspicious Scheduled Task or Cron Job Creation
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects the creation of scheduled tasks (schtasks.exe /create) or modification of crontabs (/etc/cron*, crontab -e)
+  executing scripts from non-standard directories or executing encoded commands for persistence.
+
+hypothesis: >
+  Adversaries schedule tasks to trigger persistence or execute recurring beaconing actions at elevated
+  SYSTEM or root privileges.
+
+logsource:
+  category: process_creation
+  product: sysmon, linux_auth
+  service: schtasks, cron
+
+detection:
+  selection_schtasks:
+    event_type: process_creation
+    process_name:
+      - "schtasks.exe"
+      - "schtasks"
+    command_line|contains:
+      - "/create"
+      - "/sc "
+  selection_suspicious_args:
+    command_line|contains:
+      - "powershell"
+      - "cmd.exe"
+      - "temp\\"
+      - "appdata\\"
+      - "users\\public"
+      - "wscript"
+      - "cscript"
+      - "/ru system"
+  selection_cron:
+    event_type: process_creation
+    command_line|contains:
+      - "crontab -e"
+      - "/etc/cron"
+      - "/var/spool/cron"
+  condition: (selection_schtasks and selection_suspicious_args) or selection_cron
+
+mitre_attack:
+  tactic: Persistence / Privilege Escalation
+  technique_id: T1053.005
+  technique_name: "Scheduled Task/Job: Scheduled Task"
+  subtechnique_id: T1053.005
+  url: https://attack.mitre.org/techniques/T1053/005/
+
+level: medium
+severity_rationale: >
+  Scheduled tasks executing scripts from user folders or invoking powershell.exe with hidden flags are frequent
+  indicators of persistent malicious footholds.
+
+falsepositives:
+  - Legitimate IT management agents scheduling software inventory or backup tasks
+  - Antivirus definition updater tasks
+
+limitations:
+  - Direct creation via COM API without calling `schtasks.exe` command line directly
+  - Modifying existing legitimate tasks instead of creating new ones
+
+investigation:
+  steps:
+    - "1. Query task details: `schtasks /query /tn <task_name> /v /fo list`."
+    - "2. Identify the action executable, binary path, and user context (e.g., SYSTEM vs standard user)."
+    - "3. Check the author/parent process that spawned `schtasks.exe`."
+    - "4. Inspect file hashes of target scripts."
+    - "5. Delete task: `schtasks /delete /tn <task_name> /f`."

@@ -1,0 +1,260 @@
+{
+  "total_events": 198,
+  "total_benign_events": 160,
+  "total_attack_events": 38,
+  "total_alerts_raised": 13,
+  "overall_true_positives": 12,
+  "overall_false_positives": 1,
+  "overall_true_negatives": 159,
+  "overall_false_negatives": 0,
+  "overall_precision": 0.9231,
+  "overall_recall": 1.0,
+  "overall_f1_score": 0.96,
+  "overall_fpr": 0.0063,
+  "mean_detection_latency_ms": 1.89,
+  "rule_metrics": {
+    "DET-001": {
+      "rule_id": "DET-001",
+      "rule_name": "Repeated Authentication Failures (Possible Password Guessing / Brute Force)",
+      "true_positives": 1,
+      "false_positives": 1,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 0.5,
+      "recall": 1.0,
+      "false_positive_rate": 0.0062,
+      "f1_score": 0.6667,
+      "mean_latency_ms": 0.81,
+      "latencies_ms": [
+        0.596,
+        1.018
+      ]
+    },
+    "DET-002": {
+      "rule_id": "DET-002",
+      "rule_name": "Successful Authentication Immediately Following Repeated Failures",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 1.33,
+      "latencies_ms": [
+        1.332
+      ]
+    },
+    "DET-009": {
+      "rule_id": "DET-009",
+      "rule_name": "Port Scan Behavior (Network Service Discovery Probing)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 1.18,
+      "latencies_ms": [
+        1.182
+      ]
+    },
+    "DET-010": {
+      "rule_id": "DET-010",
+      "rule_name": "DNS Anomalies (Tunneling, High-Entropy Subdomains, or DGA)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 1.02,
+      "latencies_ms": [
+        1.021
+      ]
+    },
+    "DET-012": {
+      "rule_id": "DET-012",
+      "rule_name": "Large Outbound Data Transfer (Potential Data Exfiltration)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 1.22,
+      "latencies_ms": [
+        1.216
+      ]
+    },
+    "DET-007": {
+      "rule_id": "DET-007",
+      "rule_name": "Suspicious Persistence via Registry Run Key Modification",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.17,
+      "latencies_ms": [
+        0.165
+      ]
+    },
+    "DET-008": {
+      "rule_id": "DET-008",
+      "rule_name": "Suspicious Scheduled Task or Cron Job Creation",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.54,
+      "latencies_ms": [
+        0.536
+      ]
+    },
+    "DET-006": {
+      "rule_id": "DET-006",
+      "rule_name": "Unauthorized Privilege Group Modification (Privilege Escalation / Persistence)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.19,
+      "latencies_ms": [
+        0.189
+      ]
+    },
+    "DET-003": {
+      "rule_id": "DET-003",
+      "rule_name": "Suspicious Process Execution (LOLBAS / Living-off-the-Land Binaries)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.24,
+      "latencies_ms": [
+        0.243
+      ]
+    },
+    "DET-004": {
+      "rule_id": "DET-004",
+      "rule_name": "Suspicious PowerShell Activity (Encoded Command or Web Cradle)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 3.43,
+      "latencies_ms": [
+        3.429
+      ]
+    },
+    "DET-005": {
+      "rule_id": "DET-005",
+      "rule_name": "Security Logging Disabled or Audit Log Cleared",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.44,
+      "latencies_ms": [
+        0.439
+      ]
+    },
+    "DET-011": {
+      "rule_id": "DET-011",
+      "rule_name": "Shadow Copy Deletion or System Recovery Manipulation",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 13.24,
+      "latencies_ms": [
+        13.238
+      ]
+    }
+  },
+  "threshold_experiments": [
+    {
+      "rule_id": "DET-001",
+      "parameter": "failure_threshold",
+      "value": 3,
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "note": "Threshold 3: Catches attack"
+    },
+    {
+      "rule_id": "DET-001",
+      "parameter": "failure_threshold",
+      "value": 5,
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "note": "Threshold 5: Catches attack"
+    },
+    {
+      "rule_id": "DET-001",
+      "parameter": "failure_threshold",
+      "value": 8,
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "note": "Threshold 8: Catches attack"
+    },
+    {
+      "rule_id": "DET-001",
+      "parameter": "failure_threshold",
+      "value": 12,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "note": "Threshold 12: Misses small brute force"
+    }
+  ]
+}

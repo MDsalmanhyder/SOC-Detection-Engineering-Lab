@@ -1,0 +1,168 @@
+{
+  "metadata": {
+    "name": "SOC Detection Engineering Lab Labeled Benchmark",
+    "version": "1.0.0",
+    "generated_at": "2026-10-10T09:20:55.177066+00:00",
+    "total_attack_scenarios": 12
+  },
+  "scenarios": [
+    {
+      "scenario_id": "SCN-001",
+      "expected_rule": "DET-001",
+      "technique_id": "T1110.001",
+      "technique_name": "Password Guessing",
+      "description": "8 rapid SSH password failures against user root from untrusted external IP",
+      "trigger_event_id": "atk-det001-fail-04",
+      "event_ids": [
+        "atk-det001-fail-00",
+        "atk-det001-fail-01",
+        "atk-det001-fail-02",
+        "atk-det001-fail-03",
+        "atk-det001-fail-04",
+        "atk-det001-fail-05",
+        "atk-det001-fail-06",
+        "atk-det001-fail-07"
+      ]
+    },
+    {
+      "scenario_id": "SCN-002",
+      "expected_rule": "DET-002",
+      "technique_id": "T1078",
+      "technique_name": "Valid Accounts",
+      "description": "5 brute-force failures followed immediately by successful logon for finance-admin",
+      "trigger_event_id": "atk-det002-succ-01",
+      "event_ids": [
+        "atk-det002-fail-00",
+        "atk-det002-fail-01",
+        "atk-det002-fail-02",
+        "atk-det002-fail-03",
+        "atk-det002-fail-04",
+        "atk-det002-succ-01"
+      ]
+    },
+    {
+      "scenario_id": "SCN-003",
+      "expected_rule": "DET-003",
+      "technique_id": "T1059.003",
+      "technique_name": "LOLBAS Abuse",
+      "description": "certutil download cradle staging remote beacon.exe",
+      "trigger_event_id": "atk-det003-certutil",
+      "event_ids": [
+        "atk-det003-certutil"
+      ]
+    },
+    {
+      "scenario_id": "SCN-004",
+      "expected_rule": "DET-004",
+      "technique_id": "T1059.001",
+      "technique_name": "Command and Scripting Interpreter: PowerShell",
+      "description": "PowerShell spawned by Word macro executing encoded download cradle",
+      "trigger_event_id": "atk-det004-pscradle",
+      "event_ids": [
+        "atk-det004-pscradle"
+      ]
+    },
+    {
+      "scenario_id": "SCN-005",
+      "expected_rule": "DET-005",
+      "technique_id": "T1562.001",
+      "technique_name": "Impair Defenses: Disable or Modify Tools",
+      "description": "Adversary clearing Security event log with wevtutil cl Security",
+      "trigger_event_id": "atk-det005-wevtutil",
+      "event_ids": [
+        "atk-det005-wevtutil"
+      ]
+    },
+    {
+      "scenario_id": "SCN-006",
+      "expected_rule": "DET-006",
+      "technique_id": "T1098",
+      "technique_name": "Account Manipulation",
+      "description": "User backdoor-user added to Domain Admins group",
+      "trigger_event_id": "atk-det006-privadd",
+      "event_ids": [
+        "atk-det006-privadd"
+      ]
+    },
+    {
+      "scenario_id": "SCN-007",
+      "expected_rule": "DET-007",
+      "technique_id": "T1547.001",
+      "technique_name": "Boot or Logon Autostart Execution: Registry Run Keys",
+      "description": "Persistence established in HKCU CurrentVersion\\Run pointing to temp payload",
+      "trigger_event_id": "atk-det007-runkey",
+      "event_ids": [
+        "atk-det007-runkey"
+      ]
+    },
+    {
+      "scenario_id": "SCN-008",
+      "expected_rule": "DET-008",
+      "technique_id": "T1053.005",
+      "technique_name": "Scheduled Task/Job: Scheduled Task",
+      "description": "Scheduled task created running hidden powershell at startup as SYSTEM",
+      "trigger_event_id": "atk-det008-schtask",
+      "event_ids": [
+        "atk-det008-schtask"
+      ]
+    },
+    {
+      "scenario_id": "SCN-009",
+      "expected_rule": "DET-009",
+      "technique_id": "T1046",
+      "technique_name": "Network Service Discovery",
+      "description": "Port scan from 10.0.1.99 across 15 distinct ports on 10.0.0.10 within 30 seconds",
+      "trigger_event_id": "atk-det009-port-09",
+      "event_ids": [
+        "atk-det009-port-00",
+        "atk-det009-port-01",
+        "atk-det009-port-02",
+        "atk-det009-port-03",
+        "atk-det009-port-04",
+        "atk-det009-port-05",
+        "atk-det009-port-06",
+        "atk-det009-port-07",
+        "atk-det009-port-08",
+        "atk-det009-port-09",
+        "atk-det009-port-10",
+        "atk-det009-port-11",
+        "atk-det009-port-12",
+        "atk-det009-port-13",
+        "atk-det009-port-14"
+      ]
+    },
+    {
+      "scenario_id": "SCN-010",
+      "expected_rule": "DET-010",
+      "technique_id": "T1071.004",
+      "technique_name": "Application Layer Protocol: DNS",
+      "description": "Base32 encoded high-entropy payload label over .tunnel.exfil-c2.net",
+      "trigger_event_id": "atk-det010-dnstunnel",
+      "event_ids": [
+        "atk-det010-dnstunnel"
+      ]
+    },
+    {
+      "scenario_id": "SCN-011",
+      "expected_rule": "DET-011",
+      "technique_id": "T1490",
+      "technique_name": "Inhibit System Recovery",
+      "description": "Ransomware precursor: deleting volume shadow copies via vssadmin",
+      "trigger_event_id": "atk-det011-vssadmin",
+      "event_ids": [
+        "atk-det011-vssadmin"
+      ]
+    },
+    {
+      "scenario_id": "SCN-012",
+      "expected_rule": "DET-012",
+      "technique_id": "T1048.003",
+      "technique_name": "Exfiltration Over Alternative Protocol",
+      "description": "70 MB compressed archive egress to untrusted IP 198.51.100.99",
+      "trigger_event_id": "atk-det012-exfil",
+      "event_ids": [
+        "atk-det012-exfil"
+      ]
+    }
+  ]
+}

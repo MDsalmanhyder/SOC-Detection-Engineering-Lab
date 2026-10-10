@@ -1,0 +1,70 @@
+id: DET-010
+uuid: 3f0a04ab-8fc3-4ee4-c5f6-6a3a49b4440a
+title: DNS Anomalies (Tunneling, High-Entropy Subdomains, or DGA)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects suspicious DNS query patterns indicative of DNS tunneling, C2 beaconing, or DGA
+  (Domain Generation Algorithm) queries characterized by excessively long subdomains, high entropy,
+  or repeated base32/base64-like query strings.
+
+hypothesis: >
+  Adversaries bypass restrictive egress firewalls by tunneling command-and-control data or exfiltrating
+  stolen records encoded inside DNS request query labels (e.g. iodine, dnscat2).
+
+logsource:
+  category: dns_query
+  product: zeek_dns, sysmon
+  service: dns
+
+detection:
+  selection_dns:
+    event_type: dns_query
+  selection_tunneling_patterns:
+    - dns_query_name|re: "^[a-zA-Z0-9_-]{25,}\\.[a-zA-Z0-9.-]+$"
+    - dns_query_name|contains:
+      - ".tunnel."
+      - ".dnscat."
+      - ".c2."
+  condition: selection_dns and selection_tunneling_patterns
+
+threshold:
+  max_subdomain_length: 25
+  entropy_threshold: 3.8
+  tunable: true
+
+suppression:
+  window_seconds: 600
+  keys:
+    - source_ip
+    - dns_query_name
+
+mitre_attack:
+  tactic: Command and Control / Exfiltration
+  technique_id: T1071.004
+  technique_name: "Application Layer Protocol: DNS"
+  subtechnique_id: T1071.004
+  url: https://attack.mitre.org/techniques/T1071/004/
+
+level: high
+severity_rationale: >
+  DNS queries are rarely blocked outbound. High-volume encoded subdomain requests are strong signatures
+  of data exfiltration or active covert channel C2 communication.
+
+falsepositives:
+  - Antivirus and anti-spam lookup queries (e.g., Sophos, Spamhaus, McAfee reputation queries)
+  - Content delivery networks (CDNs) with long alphanumeric hashes (e.g., Akamai / AWS CloudFront subdomains)
+
+limitations:
+  - Slow DNS beaconing with short payload chunks spread over days
+  - Using DoH (DNS over HTTPS) to 8.8.8.8 or 1.1.1.1 which encrypts queries and blinds network DNS parsers
+
+investigation:
+  steps:
+    - "1. Inspect the queried domains: calculate length and examine if they represent encoded hex or base32/base64."
+    - "2. Identify the internal client IP issuing the requests and the authoritative nameserver responding."
+    - "3. Check query volume: did this client issue hundreds or thousands of similar queries in minutes?"
+    - "4. Inspect the client process responsible for making network connections on port 53."
+    - "5. Sinkhole the root domain at the internal DNS resolver and inspect client machine."

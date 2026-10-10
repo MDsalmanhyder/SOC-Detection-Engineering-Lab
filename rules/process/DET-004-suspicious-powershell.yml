@@ -1,0 +1,67 @@
+id: DET-004
+uuid: d94b4e45-2f6d-4ee8-cf90-04d4e35e88b4
+title: Suspicious PowerShell Activity (Encoded Command or Web Cradle)
+status: production
+version: 1.2.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects suspicious PowerShell execution patterns including base64 encoded command arguments (-e, -enc, -encodedcommand),
+  web download cradles (DownloadString, Net.WebClient), or aggressive execution bypass flags (-ep bypass -noni -w hidden).
+
+hypothesis: >
+  Attackers commonly leverage PowerShell to execute uncompiled payloads in memory, bypassing script file
+  inspection on disk by encoding instructions or downloading remote stagers directly into memory.
+
+logsource:
+  category: process_creation
+  product: sysmon, windows_security
+  service: powershell
+
+detection:
+  selection_ps:
+    event_type: process_creation
+    process_name:
+      - "powershell.exe"
+      - "pwsh.exe"
+      - "powershell_ise.exe"
+  selection_flags:
+    command_line|contains:
+      - "-enc"
+      - "-encodedcommand"
+      - "-e "
+      - "downloadstring"
+      - "iex "
+      - "invoke-expression"
+      - "net.webclient"
+      - "bypass -w hidden"
+      - "-nop -noni -w hidden"
+  condition: selection_ps and selection_flags
+
+mitre_attack:
+  tactic: Execution
+  technique_id: T1059.001
+  technique_name: "Command and Scripting Interpreter: PowerShell"
+  subtechnique_id: T1059.001
+  url: https://attack.mitre.org/techniques/T1059/001/
+
+level: high
+severity_rationale: >
+  Base64 encoded commands and inline remote downloads are primary indicators of adversary payload execution
+  and post-exploitation frameworks (Metasploit, Empire, Cobalt Strike).
+
+falsepositives:
+  - Legitimate administrative management tools (e.g., Microsoft Intune, SCCM, Dell Command Update)
+  - Heavily automated devops scripts that pass encoded configuration objects
+
+limitations:
+  - PowerShell Script Block Logging (Event ID 4104) is required to inspect the decoded body if executed via pipeline
+  - Custom unmanaged PowerShell hosts (e.g. C# assemblies executing System.Management.Automation) do not spawn powershell.exe
+
+investigation:
+  steps:
+    - "1. Extract and decode the base64 string from the command line argument."
+    - "2. Identify the initiating parent process (e.g., Office macro, explorer.exe, or web server)."
+    - "3. Check Script Block logs (EID 4104) for full function definitions and C2 IP addresses."
+    - "4. Inspect host network connections created during the PowerShell process lifespan (Sysmon EID 3)."
+    - "5. Isolate machine if C2 communication or credential dumper activity is observed."

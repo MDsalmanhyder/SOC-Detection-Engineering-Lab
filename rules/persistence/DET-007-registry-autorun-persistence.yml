@@ -1,0 +1,67 @@
+id: DET-007
+uuid: 0c7e7178-5c90-4bb1-f2c3-3707168111e7
+title: Suspicious Persistence via Registry Run Key Modification
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects modifications to Windows Registry Run or RunOnce keys (HKLM or HKCU) pointing to binaries in
+  user-writable directories like AppData, Temp, or Public, enabling execution across user reboots.
+
+hypothesis: >
+  Adversaries establish endpoint persistence by creating autorun entries in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
+  directing execution to dropped payloads in AppData or Temp.
+
+logsource:
+  category: registry_modification
+  product: sysmon
+  service: sysmon_event_13
+
+detection:
+  selection_run:
+    event_type: registry_modification
+    registry_key|contains:
+      - "\\CurrentVersion\\Run"
+      - "\\CurrentVersion\\RunOnce"
+      - "\\CurrentVersion\\RunServices"
+  selection_path:
+    registry_value|contains:
+      - "appdata"
+      - "temp"
+      - "users\\public"
+      - "c:\\programdata"
+      - ".vbs"
+      - ".bat"
+      - ".ps1"
+      - "powershell"
+      - "cmd.exe"
+  condition: selection_run and selection_path
+
+mitre_attack:
+  tactic: Persistence
+  technique_id: T1547.001
+  technique_name: "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
+  subtechnique_id: T1547.001
+  url: https://attack.mitre.org/techniques/T1547/001/
+
+level: high
+severity_rationale: >
+  Legitimate software typically installs into C:\\Program Files\\ and registers signed executables. Executables
+  or scripts in Temp/AppData auto-starting upon login are classic malware persistence behaviors.
+
+falsepositives:
+  - Third-party chat tools (e.g. Discord, Slack, Zoom) that store auto-updating executables in %LocalAppData%
+  - User-level utility tools installed without administrative rights
+
+limitations:
+  - Alternative persistence mechanisms (WMI Event Subscriptions, COM Hijacking, Service DLLs) do not modify Run keys
+  - Obfuscated batch files launching secondary binaries indirectly
+
+investigation:
+  steps:
+    - "1. Inspect the exact value written to the registry and locate the file on disk."
+    - "2. Verify the digital signature and hash of the referenced executable."
+    - "3. Check the process that wrote the registry key (Sysmon EID 13 Image field)."
+    - "4. Inspect host network traffic created by the dropped binary."
+    - "5. Delete the registry key and remove the binary from the file system."

@@ -1,0 +1,75 @@
+id: DET-012
+uuid: 5b2c26cd-0be5-5006-e718-8c5c61d6662c
+title: Large Outbound Data Transfer (Potential Data Exfiltration)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-10
+description: >
+  Detects an anomalously large volume of outbound network traffic originating from an internal host
+  to an external or untrusted destination within a sliding correlation window, indicating potential
+  data exfiltration.
+
+hypothesis: >
+  An adversary staging or completing collection will stage corporate data and exfiltrate large archives
+  over standard or alternative protocols to an attacker-controlled external infrastructure.
+
+logsource:
+  category: network_connection
+  product: zeek, firewall
+  service: conn, flow
+
+detection:
+  selection:
+    event_type: data_transfer
+  correlation:
+    type: sum
+    group_by:
+      - source_ip
+      - dest_ip
+    target_field: bytes_out
+    window_seconds: 300
+    threshold_bytes: 52428800 # 50 MB
+  condition: selection and sum(bytes_out) >= 52428800
+
+threshold:
+  default_bytes: 52428800 # 50 MB
+  time_window_seconds: 300
+  tunable: true
+  min_val: 10485760 # 10 MB
+  max_val: 524288000 # 500 MB
+
+suppression:
+  window_seconds: 900
+  keys:
+    - source_ip
+    - dest_ip
+
+mitre_attack:
+  tactic: Exfiltration
+  technique_id: T1048.003
+  technique_name: Exfiltration Over Alternative Protocol
+  subtechnique_id: T1048.003
+  url: https://attack.mitre.org/techniques/T1048/003/
+
+level: high
+severity_rationale: >
+  High volume egress to unclassified external IP addresses strongly indicates exfiltration of stolen databases,
+  source code, or sensitive customer archives.
+
+falsepositives:
+  - Legitimate off-site backup synchronizations during scheduled backup windows
+  - Video streaming or large ISO download/upload activity
+  - Cloud storage synchronization (OneDrive, Google Drive, Dropbox)
+
+limitations:
+  - Low-throughput trickling of stolen data (e.g., 50 KB/sec over several days)
+  - Exfiltration through sanctioned cloud SaaS tenants where domain is trusted
+
+investigation:
+  steps:
+    - "1. Inspect destination IP, domain, and reputation score."
+    - "2. Verify if destination is a known corporate cloud provider or unsanctioned external host."
+    - "3. Identify the originating host and local process or user executing the outbound transfer."
+    - "4. Cross-reference file staging activity (e.g. recent creation of large .zip, .7z, or .rar archives)."
+    - "5. If unauthorized, sever the network session and block the destination IP."
