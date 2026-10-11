@@ -75,6 +75,13 @@ class StatefulCorrelator:
             if matched:
                 results.append((rule, evidence, supporting))
 
+        # DET-018: Command and Control Periodic Beaconing
+        if "DET-018" in rules:
+            rule = rules["DET-018"]
+            matched, evidence, supporting = self._eval_det_018(current_event, rule)
+            if matched:
+                results.append((rule, evidence, supporting))
+
         return results
 
     def _eval_det_001(self, current_event: NormalizedEvent, rule: RuleDefinition) -> Tuple[bool, Dict[str, Any], List[NormalizedEvent]]:
@@ -236,3 +243,46 @@ class StatefulCorrelator:
             return True, evidence, matched_events
 
         return False, {}, []
+
+    def _eval_det_018(self, current_event: NormalizedEvent, rule: RuleDefinition) -> Tuple[bool, Dict[str, Any], List[NormalizedEvent]]:
+        """
+        Detects periodic outbound network connection beaconing to the same external destination IP.
+        """
+        if current_event.event_type != EventType.NETWORK_CONNECTION.value:
+            return False, {}, []
+
+        dest_ip = current_event.dest_ip
+        src_ip = current_event.source_ip
+        if not dest_ip or not src_ip:
+            return False, {}, []
+
+        overrides = self.threshold_overrides.get("DET-018", {})
+        min_connections = overrides.get("threshold", rule.threshold.get("default_count", 5))
+        window_sec = overrides.get("window_seconds", rule.threshold.get("time_window_seconds", 300))
+
+        window_start = current_event.timestamp - timedelta(seconds=window_sec)
+        matching = []
+        for e in self.events_buffer:
+            if (e.timestamp >= window_start and e.timestamp <= current_event.timestamp and
+                e.event_type == EventType.NETWORK_CONNECTION.value and
+                e.dest_ip == dest_ip and e.source_ip == src_ip):
+                matching.append(e)
+
+        if len(matching) >= min_connections:
+            timestamps = sorted([e.timestamp.timestamp() for e in matching])
+            intervals = [timestamps[i+1] - timestamps[i] for i in range(len(timestamps)-1)]
+            if intervals:
+                avg_interval = sum(intervals) / len(intervals)
+                if 2.0 <= avg_interval <= 90.0:
+                    evidence = {
+                        "connection_count": len(matching),
+                        "dest_ip": dest_ip,
+                        "source_ip": src_ip,
+                        "average_interval_seconds": round(avg_interval, 1),
+                        "time_window_seconds": window_sec,
+                        "summary": f"{len(matching)} periodic C2 beaconing connections detected from {src_ip} to {dest_ip} (avg interval {round(avg_interval, 1)}s)"
+                    }
+                    return True, evidence, matching
+
+        return False, {}, []
+

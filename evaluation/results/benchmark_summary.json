@@ -1,17 +1,17 @@
 {
-  "total_events": 198,
+  "total_events": 208,
   "total_benign_events": 160,
-  "total_attack_events": 38,
-  "total_alerts_raised": 13,
-  "overall_true_positives": 12,
-  "overall_false_positives": 1,
-  "overall_true_negatives": 159,
+  "total_attack_events": 48,
+  "total_alerts_raised": 23,
+  "overall_true_positives": 18,
+  "overall_false_positives": 5,
+  "overall_true_negatives": 155,
   "overall_false_negatives": 0,
-  "overall_precision": 0.9231,
+  "overall_precision": 0.7826,
   "overall_recall": 1.0,
-  "overall_f1_score": 0.96,
-  "overall_fpr": 0.0063,
-  "mean_detection_latency_ms": 1.89,
+  "overall_f1_score": 0.878,
+  "overall_fpr": 0.0312,
+  "mean_detection_latency_ms": 0.28,
   "rule_metrics": {
     "DET-001": {
       "rule_id": "DET-001",
@@ -24,10 +24,10 @@
       "recall": 1.0,
       "false_positive_rate": 0.0062,
       "f1_score": 0.6667,
-      "mean_latency_ms": 0.81,
+      "mean_latency_ms": 0.47,
       "latencies_ms": [
-        0.596,
-        1.018
+        0.549,
+        0.385
       ]
     },
     "DET-002": {
@@ -41,9 +41,25 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 1.33,
+      "mean_latency_ms": 0.49,
       "latencies_ms": [
-        1.332
+        0.49
+      ]
+    },
+    "DET-013": {
+      "rule_id": "DET-013",
+      "rule_name": "Kerberoasting Service Ticket Request (RC4-HMAC Encryption Anomaly)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.1,
+      "latencies_ms": [
+        0.099
       ]
     },
     "DET-009": {
@@ -57,9 +73,9 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 1.18,
+      "mean_latency_ms": 0.74,
       "latencies_ms": [
-        1.182
+        0.739
       ]
     },
     "DET-010": {
@@ -73,9 +89,9 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 1.02,
+      "mean_latency_ms": 0.14,
       "latencies_ms": [
-        1.021
+        0.144
       ]
     },
     "DET-012": {
@@ -89,9 +105,26 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 1.22,
+      "mean_latency_ms": 0.27,
       "latencies_ms": [
-        1.216
+        0.27
+      ]
+    },
+    "DET-018": {
+      "rule_id": "DET-018",
+      "rule_name": "Command and Control Web Periodic Beaconing Anomaly (Low Jitter)",
+      "true_positives": 1,
+      "false_positives": 3,
+      "true_negatives": 158,
+      "false_negatives": 0,
+      "precision": 0.25,
+      "recall": 1.0,
+      "false_positive_rate": 0.0186,
+      "f1_score": 0.4,
+      "mean_latency_ms": 0.74,
+      "latencies_ms": [
+        0.961,
+        0.523
       ]
     },
     "DET-007": {
@@ -105,9 +138,9 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 0.17,
+      "mean_latency_ms": 0.1,
       "latencies_ms": [
-        0.165
+        0.101
       ]
     },
     "DET-008": {
@@ -121,9 +154,9 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 0.54,
+      "mean_latency_ms": 0.12,
       "latencies_ms": [
-        0.536
+        0.122
       ]
     },
     "DET-006": {
@@ -137,9 +170,25 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 0.19,
+      "mean_latency_ms": 0.11,
       "latencies_ms": [
-        0.189
+        0.11
+      ]
+    },
+    "DET-014": {
+      "rule_id": "DET-014",
+      "rule_name": "DCSync Active Directory Replication Abuse (DS-Replication-Get-Changes-All)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.14,
+      "latencies_ms": [
+        0.139
       ]
     },
     "DET-003": {
@@ -153,9 +202,9 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 0.24,
+      "mean_latency_ms": 0.17,
       "latencies_ms": [
-        0.243
+        0.174
       ]
     },
     "DET-004": {
@@ -169,9 +218,9 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 3.43,
+      "mean_latency_ms": 0.15,
       "latencies_ms": [
-        3.429
+        0.153
       ]
     },
     "DET-005": {
@@ -185,14 +234,31 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 0.44,
+      "mean_latency_ms": 0.13,
       "latencies_ms": [
-        0.439
+        0.132
       ]
     },
     "DET-011": {
       "rule_id": "DET-011",
       "rule_name": "Shadow Copy Deletion or System Recovery Manipulation",
+      "true_positives": 1,
+      "false_positives": 1,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 0.5,
+      "recall": 1.0,
+      "false_positive_rate": 0.0062,
+      "f1_score": 0.6667,
+      "mean_latency_ms": 0.16,
+      "latencies_ms": [
+        0.134,
+        0.188
+      ]
+    },
+    "DET-015": {
+      "rule_id": "DET-015",
+      "rule_name": "Trusted Developer Utility Proxy Execution (MSBuild / InstallUtil)",
       "true_positives": 1,
       "false_positives": 0,
       "true_negatives": 160,
@@ -201,9 +267,41 @@
       "recall": 1.0,
       "false_positive_rate": 0.0,
       "f1_score": 1.0,
-      "mean_latency_ms": 13.24,
+      "mean_latency_ms": 0.16,
       "latencies_ms": [
-        13.238
+        0.163
+      ]
+    },
+    "DET-016": {
+      "rule_id": "DET-016",
+      "rule_name": "Remote Thread Process Injection (CreateRemoteThread / Shellcode Injection)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.14,
+      "latencies_ms": [
+        0.138
+      ]
+    },
+    "DET-017": {
+      "rule_id": "DET-017",
+      "rule_name": "Ransomware Recovery Tampering (BCDEdit / WBAdmin / SafeBoot Disabling)",
+      "true_positives": 1,
+      "false_positives": 0,
+      "true_negatives": 160,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "false_positive_rate": 0.0,
+      "f1_score": 1.0,
+      "mean_latency_ms": 0.19,
+      "latencies_ms": [
+        0.188
       ]
     }
   },

@@ -1,0 +1,72 @@
+id: DET-016
+uuid: 1f0e2d3c-4b5a-4e12-b58a-8e2b9c4f3a1d
+title: Remote Thread Process Injection (CreateRemoteThread / Shellcode Injection)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-11
+description: >
+  Detects the creation of a remote thread into critical system processes (e.g., lsass.exe, svchost.exe,
+  explorer.exe) initiated by suspicious source binaries. Adversaries use process injection to hide in
+  legitimate processes and evade defensive memory scans.
+
+hypothesis: >
+  Adversaries inject shellcode or malicious DLLs into stable OS processes using CreateRemoteThread or
+  NtCreateThreadEx to mask network connections and maintain stealthy execution.
+
+logsource:
+  category: process_injection
+  product: sysmon
+  service: endpoint
+  event_id: 8
+
+detection:
+  selection:
+    event_type: process_creation
+    action: remote_thread_created
+  target_processes:
+    process_name:
+      - "lsass.exe"
+      - "svchost.exe"
+      - "explorer.exe"
+      - "winlogon.exe"
+  filter_known_system_sources:
+    parent_process_name:
+      - "csrss.exe"
+  condition: selection and target_processes and not filter_known_system_sources
+
+mitre_attack:
+  tactic: Defense Evasion / Privilege Escalation
+  technique_id: T1055.001
+  technique_name: "Process Injection: Dynamic-link Library Injection"
+  subtechnique_id: T1055.001
+  url: https://attack.mitre.org/techniques/T1055/001/
+
+level: critical
+severity_rationale: >
+  Remote thread injection into core Windows processes like LSASS or explorer is an unequivocal indicator
+  of credential theft, code injection, or malware evasion.
+
+suppression:
+  key: "DET-016:{host}:{process_name}:{parent_process_name}"
+  cooldown_seconds: 3600
+
+falsepositives:
+  - Security software drivers (endpoint DLP, debugging tools)
+  - Legacy graphics acceleration utilities injecting overlay hooks into explorer
+
+limitations:
+  - Process Hollowing or Early Cascade injection evading standard CreateRemoteThread hooks
+  - QueueUserAPC (Early Bird) injection prior to process initialization
+
+investigation:
+  checklist:
+    - "1. Identify source executable that initiated the thread creation."
+    - "2. Inspect memory regions of target process for unbacked executable memory (PAGE_EXECUTE_READWRITE)."
+    - "3. Check network sockets established by target process immediately following injection."
+    - "4. Capture memory dump of target process for volatility triage."
+  containment:
+    - "Immediately isolate endpoint from network."
+    - "Terminate source process and suspend injected process."
+    - "Initiate endpoint forensics for rootkit / beacon persistence."
+

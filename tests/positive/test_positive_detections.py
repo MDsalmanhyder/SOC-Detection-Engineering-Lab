@@ -206,3 +206,94 @@ def test_det012_large_outbound_transfer(engine):
     det_alerts = [a for a in alerts if a.rule_id == "DET-012"]
     assert len(det_alerts) == 1
     assert det_alerts[0].mitre_attack.technique_id == "T1048.003"
+
+
+def test_det013_kerberoasting_activity(engine):
+    ev = NormalizedEvent(
+        event_type=EventType.AUTHENTICATION.value,
+        action="kerberos_tgs_request",
+        user="john.doe",
+        service_name="MSSQLSvc/sql01.corp",
+        host="dc-01",
+        metadata={"ticket_encryption": "0x17"}
+    )
+    alerts = engine.process_event(ev)
+    det_alerts = [a for a in alerts if a.rule_id == "DET-013"]
+    assert len(det_alerts) == 1
+    assert det_alerts[0].mitre_attack.technique_id == "T1558.003"
+
+
+def test_det014_dcsync_replication(engine):
+    ev = NormalizedEvent(
+        event_type=EventType.PRIVILEGE_CHANGE.value,
+        action="directory_service_access",
+        user="attacker_svc",
+        host="dc-01",
+        metadata={"extended_rights": "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2"}
+    )
+    alerts = engine.process_event(ev)
+    det_alerts = [a for a in alerts if a.rule_id == "DET-014"]
+    assert len(det_alerts) == 1
+    assert det_alerts[0].mitre_attack.technique_id == "T1003.006"
+
+
+def test_det015_msbuild_proxy_execution(engine):
+    ev = NormalizedEvent(
+        event_type=EventType.PROCESS_CREATION.value,
+        process_name="msbuild.exe",
+        command_line="C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\MSBuild.exe C:\\Users\\Public\\payload.csproj",
+        host="workstation-99"
+    )
+    alerts = engine.process_event(ev)
+    det_alerts = [a for a in alerts if a.rule_id == "DET-015"]
+    assert len(det_alerts) == 1
+    assert det_alerts[0].mitre_attack.technique_id == "T1127.001"
+
+
+def test_det016_remote_thread_injection(engine):
+    ev = NormalizedEvent(
+        event_type=EventType.PROCESS_CREATION.value,
+        action="remote_thread_created",
+        process_name="svchost.exe",
+        parent_process_name="beacon.exe",
+        host="workstation-02",
+        metadata={"target_process_name": "lsass.exe", "event_id": 8}
+    )
+    alerts = engine.process_event(ev)
+    det_alerts = [a for a in alerts if a.rule_id == "DET-016"]
+    assert len(det_alerts) == 1
+    assert det_alerts[0].mitre_attack.technique_id == "T1055.001"
+
+
+def test_det017_ransomware_recovery_tampering(engine):
+    ev = NormalizedEvent(
+        event_type=EventType.PROCESS_CREATION.value,
+        process_name="bcdedit.exe",
+        command_line="bcdedit.exe /set {default} recoveryenabled no",
+        host="srv-app-01"
+    )
+    alerts = engine.process_event(ev)
+    det_alerts = [a for a in alerts if a.rule_id == "DET-017"]
+    assert len(det_alerts) == 1
+    assert det_alerts[0].mitre_attack.technique_id == "T1490"
+
+
+def test_det018_c2_periodic_beaconing(engine):
+    base = datetime.now(timezone.utc)
+    alerts = []
+    for i in range(6):
+        ev = NormalizedEvent(
+            timestamp=base + timedelta(seconds=i * 20),
+            event_type=EventType.NETWORK_CONNECTION.value,
+            action="connection_established",
+            source_ip="10.0.1.50",
+            dest_ip="203.0.113.88",
+            dest_port=443,
+            host="workstation-05"
+        )
+        alerts.extend(engine.process_event(ev))
+    
+    det_alerts = [a for a in alerts if a.rule_id == "DET-018"]
+    assert len(det_alerts) >= 1
+    assert det_alerts[0].mitre_attack.technique_id == "T1071.001"
+

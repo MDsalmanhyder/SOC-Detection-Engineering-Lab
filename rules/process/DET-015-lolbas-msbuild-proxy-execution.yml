@@ -1,0 +1,75 @@
+id: DET-015
+uuid: b58a3d2e-9f1a-4c9d-8e2b-7c9d4e12b58a
+title: Trusted Developer Utility Proxy Execution (MSBuild / InstallUtil)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-11
+description: >
+  Detects the abuse of Microsoft signed developer utilities MSBuild.exe or InstallUtil.exe to compile
+  and execute arbitrary unmanaged code, bypassing application allowlisting (AppLocker / WDAC).
+
+hypothesis: >
+  Adversaries bypass application whitelisting and code signing policies by utilizing trusted Microsoft
+  compilers (MSBuild / InstallUtil) to execute malicious C# / XML tasks stored in user-writable paths.
+
+logsource:
+  category: process_creation
+  product: sysmon, windows_security
+  service: endpoint
+  event_id: 1
+
+detection:
+  selection_process:
+    event_type: process_creation
+    process_name:
+      - "msbuild.exe"
+      - "msbuild"
+      - "installutil.exe"
+      - "installutil"
+  selection_paths:
+    command_line|contains:
+      - "temp\\"
+      - "appdata\\"
+      - "users\\public\\"
+      - "c:\\programdata\\"
+      - ".csproj"
+      - ".xml"
+      - "/logfile="
+  condition: selection_process and selection_paths
+
+mitre_attack:
+  tactic: Defense Evasion
+  technique_id: T1127.001
+  technique_name: "Trusted Developer Utilities Proxy Execution: MSBuild"
+  subtechnique_id: T1127.001
+  url: https://attack.mitre.org/techniques/T1127/001/
+
+level: high
+severity_rationale: >
+  MSBuild execution on non-developer endpoints executing project files from temporary or user-writable
+  directories indicates living-off-the-land application whitelisting bypass.
+
+suppression:
+  key: "DET-015:{host}:{process_name}:{user}"
+  cooldown_seconds: 3600
+
+falsepositives:
+  - Legitimate developer build environments compiling solutions from local repositories
+  - Automated CI/CD build agents (GitLab Runner / Jenkins agent)
+
+limitations:
+  - Adversaries executing MSBuild from within standard program files directories
+  - Ingestion blind spot if Sysmon command line capture is truncated or disabled
+
+investigation:
+  checklist:
+    - "1. Check endpoint role: is this host registered as an engineering developer machine?"
+    - "2. Inspect the XML/CSPROJ payload file executed by MSBuild."
+    - "3. Check child processes: did MSBuild spawn cmd.exe, powershell.exe, or establish network sockets?"
+    - "4. Review parent process tree (e.g., did an Office macro or browser spawn MSBuild?)."
+  containment:
+    - "Terminate the MSBuild process tree and quarantine the input XML/project file."
+    - "Isolate endpoint pending full forensic triage."
+    - "Enforce AppLocker/WDAC rule blocking MSBuild outside development organizational units."
+

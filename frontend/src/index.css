@@ -1,11 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg-main: #070b13;
-  --bg-card: rgba(13, 20, 36, 0.78);
-  --bg-card-hover: rgba(19, 29, 51, 0.88);
-  --border-subtle: rgba(56, 189, 248, 0.12);
-  --border-focus: rgba(56, 189, 248, 0.45);
+  --bg-main: #040814;
+  --bg-surface: #090e1f;
+  --bg-card: rgba(12, 19, 39, 0.75);
+  --bg-card-hover: rgba(18, 28, 56, 0.88);
+  --border-subtle: rgba(56, 189, 248, 0.14);
+  --border-focus: rgba(56, 189, 248, 0.5);
+  --border-glow: rgba(6, 182, 212, 0.4);
   
   --primary-cyan: #06b6d4;
   --primary-sky: #38bdf8;
@@ -14,7 +16,7 @@
   --accent-rose: #f43f5e;
   --accent-purple: #a855f7;
   
-  --text-main: #f1f5f9;
+  --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
   
@@ -31,9 +33,10 @@
 body {
   background-color: var(--bg-main);
   background-image: 
-    radial-gradient(at 10% 15%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 85%, rgba(168, 85, 247, 0.06) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(15, 23, 42, 0.5) 0px, transparent 100%);
+    radial-gradient(at 10% 10%, rgba(6, 182, 212, 0.09) 0px, transparent 45%),
+    radial-gradient(at 90% 90%, rgba(168, 85, 247, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 20%, rgba(16, 185, 129, 0.04) 0px, transparent 60%),
+    radial-gradient(at 50% 70%, rgba(15, 23, 42, 0.6) 0px, transparent 100%);
   color: var(--text-main);
   font-family: var(--font-sans);
   min-height: 100vh;
@@ -41,20 +44,20 @@ body {
   line-height: 1.5;
 }
 
-/* Custom modern scrollbars */
+/* Custom cyber scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(8, 13, 26, 0.6);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.25);
-  border-radius: 3px;
+  background: rgba(56, 189, 248, 0.22);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.55);
 }
 
 .mono {
@@ -68,30 +71,50 @@ body {
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-panel:hover {
   border-color: var(--border-focus);
 }
 
-/* Glow effects */
+.glass-panel-elevated {
+  background: rgba(14, 23, 48, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 14px;
+}
+
+/* Cyber Glow effects */
 .glow-cyan {
-  box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 0 24px -4px rgba(6, 182, 212, 0.3);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 24px -4px rgba(16, 185, 129, 0.3);
 }
 
 .glow-rose {
-  box-shadow: 0 0 20px -5px rgba(244, 63, 94, 0.25);
+  box-shadow: 0 0 24px -4px rgba(244, 63, 94, 0.3);
+}
+
+.glow-amber {
+  box-shadow: 0 0 24px -4px rgba(245, 158, 11, 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 0 24px -4px rgba(168, 85, 247, 0.3);
 }
 
 /* Animation utilities */
 @keyframes pulseSubtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.65; transform: scale(0.98); }
 }
 
 .pulse-live {
-  animation: pulseSubtle 2s infinite ease-in-out;
+  animation: pulseSubtle 2.2s infinite ease-in-out;
 }
 
 @keyframes slideInRight {
@@ -106,5 +129,18 @@ body {
 }
 
 .slide-drawer {
-  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+.cyber-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+}
+

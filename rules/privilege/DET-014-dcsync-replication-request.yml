@@ -1,0 +1,71 @@
+id: DET-014
+uuid: 8e2b9c4f-3a1d-4b5c-a67e-1f0e2d3c4b5a
+title: DCSync Active Directory Replication Abuse (DS-Replication-Get-Changes-All)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-11
+description: >
+  Detects non-Domain Controller accounts requesting Directory Replication Services (DRSUAPI) replication
+  rights (DCSync). Adversaries abuse Mimikatz 'lsadump::dcsync' to emulate a domain controller and retrieve
+  password hashes (including KRBTGT) over the network.
+
+hypothesis: >
+  Adversaries possessing compromised domain admin or delegated credentials initiate DRSUAPI replication
+  requests from standard endpoints to extract sensitive password hashes from Active Directory without code
+  execution on the Domain Controller.
+
+logsource:
+  category: privilege_change
+  product: windows_security
+  service: security
+  event_id: 4662
+
+detection:
+  selection:
+    event_type: privilege_change
+    action: directory_service_access
+  replication_extended_rights:
+    extended_rights|contains:
+      - "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2"  # DS-Replication-Get-Changes-All
+      - "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2"  # DS-Replication-Get-Changes-In-Filtered-Set
+      - "89e95b76-444d-11d2-ae06-00c04fb6dd80"  # DS-Replication-Get-Changes
+  filter_dc_accounts:
+    user|endswith: "$"
+  condition: selection and replication_extended_rights and not filter_dc_accounts
+
+mitre_attack:
+  tactic: Credential Access
+  technique_id: T1003.006
+  technique_name: "OS Credential Dumping: DCSync"
+  subtechnique_id: T1003.006
+  url: https://attack.mitre.org/techniques/T1003/006/
+
+level: critical
+severity_rationale: >
+  DCSync provides complete domain compromise by extracting active directory hashes including the KRBTGT
+  account, enabling Golden Ticket forgery. Non-DC accounts should never perform directory replication.
+
+suppression:
+  key: "DET-014:{host}:{user}"
+  cooldown_seconds: 1800
+
+falsepositives:
+  - Legitimate directory synchronization tools (Azure AD Connect / Entra Connect service account)
+  - Exchange Server directory sync tasks (authorized service account)
+
+limitations:
+  - Attackers compromising a genuine Domain Controller directly (covered by EID 10/lsass rules)
+  - Network-level RPC encryption obscuring non-logged DRSUAPI packets (requires network sensor inspection)
+
+investigation:
+  checklist:
+    - "1. Verify originating user account: is this an authorized replication service account (e.g., MSOL_)?"
+    - "2. Inspect source IP: is the replication originating from a known Domain Controller IP or a user workstation?"
+    - "3. Check the targeted replication partition: was the entire schema/domain replicated or specific objects?"
+    - "4. Immediately assume total domain compromise if executed by an unauthorized user."
+  containment:
+    - "Immediately disable the compromised account performing DCSync."
+    - "Isolate the source endpoint from the enterprise network."
+    - "Initiate Domain-wide KRBTGT password reset procedure (two-step rotation separated by 24h)."
+

@@ -1,0 +1,71 @@
+id: DET-013
+uuid: 4f1a8e2b-7c9d-4e12-b58a-3d2e9f1a0b5c
+title: Kerberoasting Service Ticket Request (RC4-HMAC Encryption Anomaly)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-11
+description: >
+  Detects Kerberos Ticket Granting Service (TGS) ticket requests utilizing legacy RC4-HMAC (0x17)
+  encryption for service accounts. Adversaries request RC4 service tickets to extract offline password
+  hashes for cracking via Hashcat/John the Ripper (Kerberoasting).
+
+hypothesis: >
+  Adversaries request Kerberos TGS tickets for SPNs registered to user accounts specifying weak encryption
+  types (0x17 / RC4-HMAC) to facilitate offline password cracking without touching the target service.
+
+logsource:
+  category: authentication
+  product: windows_security, sysmon
+  service: security
+  event_id: 4769
+
+detection:
+  selection:
+    event_type: authentication
+    action: kerberos_tgs_request
+    status: success
+  filter_encryption:
+    ticket_encryption: "0x17"
+  filter_machine_accounts:
+    service_name|endswith: "$"
+  condition: selection and filter_encryption and not filter_machine_accounts
+
+mitre_attack:
+  tactic: Credential Access
+  technique_id: T1558.003
+  technique_name: "Steal or Forge Kerberos Tickets: Kerberoasting"
+  subtechnique_id: T1558.003
+  url: https://attack.mitre.org/techniques/T1558/003/
+
+level: high
+severity_rationale: >
+  RC4-HMAC ticket requests for non-machine SPNs are strong indicators of active Kerberoasting. Modern
+  Windows environments default to AES-128/256 (0x12/0x13).
+
+threshold:
+  default_count: 1
+  time_window_seconds: 60
+
+suppression:
+  key: "DET-013:{host}:{user}:{service_name}"
+  cooldown_seconds: 3600
+
+falsepositives:
+  - Legacy Microsoft SQL or IIS service accounts running on legacy Windows 2008/2012 domain controllers
+  - Scanner tools conducting vulnerability assessments with approved authorization
+
+limitations:
+  - Attackers requesting AES-256 tickets if target account supports AES (longer to crack but stealthier)
+  - Group Managed Service Accounts (gMSA) rotate 128-char passwords automatically, neutralizing cracking
+
+investigation:
+  checklist:
+    - "1. Inspect requesting user account: is this user authorized to access the requested service?"
+    - "2. Check volume: did this account request tickets for multiple distinct SPNs in under 5 minutes?"
+    - "3. Verify target account: is the target account an active user account with administrative rights?"
+    - "4. Review source IP address and host logon session (EventID 4624)."
+  containment:
+    - "Reset password of target service account to a 30+ character random password."
+    - "Enable AES encryption (msDS-SupportedEncryptionTypes) for the target SPN account."
+    - "Revoke Kerberos TGT of the requesting user account and investigate source workstation."

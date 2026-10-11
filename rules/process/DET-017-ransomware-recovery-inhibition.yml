@@ -1,0 +1,72 @@
+id: DET-017
+uuid: 9c4f3a1d-b58a-4e12-8e2b-1f0e2d3c4b5a
+title: Ransomware Recovery Tampering (BCDEdit / WBAdmin / SafeBoot Disabling)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-11
+description: >
+  Detects commands executing to disable Windows Startup Recovery, erase backup catalogs, or tamper with
+  SafeBoot settings using bcdedit.exe or wbadmin.exe. Typical precursor to ransomware deployment.
+
+hypothesis: >
+  Ransomware operators routinely execute bcdedit and wbadmin commands prior to encryption to eliminate
+  backup recovery options and prevent victims from restoring without paying extortion.
+
+logsource:
+  category: process_creation
+  product: sysmon, windows_security
+  service: endpoint
+  event_id: 1
+
+detection:
+  selection_process:
+    event_type: process_creation
+    process_name:
+      - "bcdedit.exe"
+      - "bcdedit"
+      - "wbadmin.exe"
+      - "wbadmin"
+  selection_commands:
+    command_line|contains:
+      - "recoveryenabled no"
+      - "bootstatuspolicy ignoreallfailures"
+      - "delete catalog -quiet"
+      - "delete systemstatebackup"
+  condition: selection_process and selection_commands
+
+mitre_attack:
+  tactic: Impact
+  technique_id: T1490
+  technique_name: "Inhibit System Recovery: Boot Configuration Tampering"
+  subtechnique_id: T1490
+  url: https://attack.mitre.org/techniques/T1490/
+
+level: critical
+severity_rationale: >
+  Disabling boot recovery or wiping backup catalogs is high-velocity precursor behavior to enterprise
+  ransomware detonations (LockBit, BlackCat, Akira).
+
+suppression:
+  key: "DET-017:{host}:{process_name}"
+  cooldown_seconds: 1800
+
+falsepositives:
+  - Enterprise IT automated disaster recovery testing scripts (rare in production endpoints)
+  - Operating system deployment task sequences during initial imaging
+
+limitations:
+  - Attackers using custom kernel drivers to corrupt boot sectors directly without userland tools
+  - Direct registry tampering of BCD hive without executing bcdedit.exe
+
+investigation:
+  checklist:
+    - "1. Check for concurrent volume shadow copy deletion (vssadmin / wmic)."
+    - "2. Inspect mass file creation with known ransomware extensions (.lock, .enc)."
+    - "3. Identify parent process (was it spawned by PsExec, WMI, or compromised service?)."
+    - "4. Immediately assume high-risk imminent ransomware detonation."
+  containment:
+    - "Instantly isolate endpoint and disable network adapters."
+    - "Kill parent process tree and snapshot memory."
+    - "Alert incident commander for enterprise-wide ransomware containment protocol."
+

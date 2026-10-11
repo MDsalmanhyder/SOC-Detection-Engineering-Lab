@@ -1,0 +1,71 @@
+id: DET-018
+uuid: 3a1d9c4f-4e12-8e2b-b58a-4b5a1f0e2d3c
+title: Command and Control Web Periodic Beaconing Anomaly (Low Jitter)
+status: production
+version: 1.1.0
+author: SOC Detection Engineering Lab
+date: 2026-10-11
+description: >
+  Detects repetitive, low-jitter periodic HTTP/TLS network connections to external destinations typical
+  of Cobalt Strike, Mythic, or Sliver C2 frameworks communicating with external listeners.
+
+hypothesis: >
+  Adversary implants check in on periodic schedules with consistent intervals (e.g. every 30s or 60s)
+  with low random jitter, generating distinct mathematical periodicity in network flow logs.
+
+logsource:
+  category: network_connection
+  product: zeek_conn, firewall
+  service: network
+
+detection:
+  selection:
+    event_type: network_connection
+    status: success
+  correlation:
+    type: periodic_beaconing
+    min_connections: 5
+    interval_seconds: 30
+    max_jitter_percent: 15
+    time_window_seconds: 300
+  condition: selection
+
+mitre_attack:
+  tactic: Command and Control
+  technique_id: T1071.001
+  technique_name: "Application Layer Protocol: Web Protocols"
+  subtechnique_id: T1071.001
+  url: https://attack.mitre.org/techniques/T1071/001/
+
+level: high
+severity_rationale: >
+  Periodic external connections with low interval jitter strongly indicate automated malware callbacks
+  or active C2 frameworks communicating with threat actor infrastructure.
+
+threshold:
+  default_count: 5
+  time_window_seconds: 300
+
+suppression:
+  key: "DET-018:{host}:{dest_ip}"
+  cooldown_seconds: 3600
+
+falsepositives:
+  - Legitimate telemetry pollers (NTP clients, cloud monitoring agents, Windows Update sync)
+  - Authorized enterprise messaging clients (Slack, Teams heartbeat)
+
+limitations:
+  - C2 frameworks configured with high random jitter (> 50%) or sleep timers spanning days
+  - Domain fronting or CDNs obscuring true external destinations
+
+investigation:
+  checklist:
+    - "1. Inspect external destination IP and domain reputation via VirusTotal / ThreatConnect."
+    - "2. Correlate with endpoint process that initiated the socket (Sysmon EventID 3)."
+    - "3. Check user-agent and URI patterns in Zeek http.log."
+    - "4. Inspect data transfer sizes: are beacon requests small and uniform?"
+  containment:
+    - "Block external destination IP/domain at enterprise perimeter firewalls."
+    - "Isolate infected endpoint and capture memory dump."
+    - "Terminate associated implant process."
+

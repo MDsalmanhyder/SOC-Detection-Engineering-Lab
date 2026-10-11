@@ -3,7 +3,7 @@
     "name": "SOC Detection Engineering Lab Labeled Benchmark",
     "version": "1.0.0",
     "generated_at": "2026-10-10T09:20:55.177066+00:00",
-    "total_attack_scenarios": 12
+    "total_attack_scenarios": 18
   },
   "scenarios": [
     {
@@ -162,6 +162,76 @@
       "trigger_event_id": "atk-det012-exfil",
       "event_ids": [
         "atk-det012-exfil"
+      ]
+    },
+    {
+      "scenario_id": "SCN-013",
+      "expected_rule": "DET-013",
+      "technique_id": "T1558.003",
+      "technique_name": "Steal or Forge Kerberos Tickets: Kerberoasting",
+      "description": "Adversary requesting RC4-HMAC ticket for service account MSSQLSvc/sql01.corp",
+      "trigger_event_id": "atk-det013-kerberoast",
+      "event_ids": [
+        "atk-det013-kerberoast"
+      ]
+    },
+    {
+      "scenario_id": "SCN-014",
+      "expected_rule": "DET-014",
+      "technique_id": "T1003.006",
+      "technique_name": "OS Credential Dumping: DCSync",
+      "description": "Mimikatz lsadump::dcsync DRSUAPI replication request from non-DC account",
+      "trigger_event_id": "atk-det014-dcsync",
+      "event_ids": [
+        "atk-det014-dcsync"
+      ]
+    },
+    {
+      "scenario_id": "SCN-015",
+      "expected_rule": "DET-015",
+      "technique_id": "T1127.001",
+      "technique_name": "Trusted Developer Utilities Proxy Execution: MSBuild",
+      "description": "MSBuild.exe compiling and executing payload from C:\\Users\\Public\\stage.csproj",
+      "trigger_event_id": "atk-det015-msbuild",
+      "event_ids": [
+        "atk-det015-msbuild"
+      ]
+    },
+    {
+      "scenario_id": "SCN-016",
+      "expected_rule": "DET-016",
+      "technique_id": "T1055.001",
+      "technique_name": "Process Injection: CreateRemoteThread",
+      "description": "Adversary injecting shellcode into LSASS via CreateRemoteThread",
+      "trigger_event_id": "atk-det016-injection",
+      "event_ids": [
+        "atk-det016-injection"
+      ]
+    },
+    {
+      "scenario_id": "SCN-017",
+      "expected_rule": "DET-017",
+      "technique_id": "T1490",
+      "technique_name": "Inhibit System Recovery: BCDEdit Disabling",
+      "description": "bcdedit /set recoveryenabled no followed by wbadmin delete catalog",
+      "trigger_event_id": "atk-det017-bcdedit",
+      "event_ids": [
+        "atk-det017-bcdedit"
+      ]
+    },
+    {
+      "scenario_id": "SCN-018",
+      "expected_rule": "DET-018",
+      "technique_id": "T1071.001",
+      "technique_name": "Application Layer Protocol: Web Protocols",
+      "description": "Periodic C2 callback beaconing to 203.0.113.88 with low jitter",
+      "trigger_event_id": "atk-det018-beacon-04",
+      "event_ids": [
+        "atk-det018-beacon-00",
+        "atk-det018-beacon-01",
+        "atk-det018-beacon-02",
+        "atk-det018-beacon-03",
+        "atk-det018-beacon-04"
       ]
     }
   ]
