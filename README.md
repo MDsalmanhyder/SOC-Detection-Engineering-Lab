@@ -11,7 +11,7 @@
 [![Benchmark Recall](https://img.shields.io/badge/Benchmark%20Recall-100.0%25-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **A reproducible, laboratory-grade Security Operations Center (SOC) Detection Engineering and Detection-as-Code platform** for ingesting multi-source security telemetry, formalizing Sigma-compatible detection rules, translating queries natively into Microsoft Sentinel (KQL), Splunk (SPL), and Elastic (EQL), simulating Atomic Red Team adversary behaviors, testing mathematical detection metrics (Precision, Recall, FPR, F1, Latency), and integrating industry best practices from [Awesome Detection Engineer](https://github.com/st0pp3r/awesome-detection-engineer).
+> **A reproducible, Security Operations Center (SOC) Detection Engineering and Detection-as-Code platform** for ingesting multi-source security telemetry, formalizing Sigma-compatible detection rules, translating queries natively into Microsoft Sentinel (KQL), Splunk (SPL), and Elastic (EQL), simulating Atomic Red Team adversary behaviors, testing mathematical detection metrics (Precision, Recall, FPR, F1, Latency), and integrating industry best practices.
 
 ---
 
