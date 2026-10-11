@@ -290,9 +290,7 @@ process where event.category == "process" and event.type == "start" and
 
 ---
 
-## 6. Awesome Detection Engineer Hub Integration
-
-Inspired by [st0pp3r/awesome-detection-engineer](https://github.com/st0pp3r/awesome-detection-engineer), the lab integrates a dedicated Knowledge & Tooling Hub surfaced via `GET /api/awesome-resources` and displayed directly in the web console:
+## 6. Detection Engineer Hub Integration
 
 - **Rule Repositories**: [SigmaHQ](https://github.com/SigmaHQ/sigma), [Splunk Security Content](https://github.com/splunk/security_content), [Microsoft Sentinel Detections](https://github.com/Azure/Azure-Sentinel), [Elastic Detection Rules](https://github.com/elastic/detection-rules), [FalconForce FalconFriday](https://github.com/FalconForce/FalconFriday), [SnapAttack](https://www.snapattack.com/).
 - **Adversary Emulation**: [Atomic Red Team](https://github.com/redcanaryco/atomic-red-team), [Stratus Red Team](https://github.com/DataDog/stratus-red-team), [LOLBAS Project](https://lolbas-project.github.io/), [MITRE Caldera](https://github.com/mitre/caldera), [MalwLess Simulation Tool](https://github.com/mrd0x/MalwLess).
