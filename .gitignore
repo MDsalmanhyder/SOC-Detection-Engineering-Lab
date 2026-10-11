@@ -9,7 +9,7 @@ venv/
 .venv/
 build/
 develop-eggs/
-dist/
+/dist/
 downloads/
 eggs/
 .eggs/
@@ -39,3 +39,8 @@ frontend/node_modules/
 .idea/
 *.swp
 *.swo
+
+# OS & Temporary
+.DS_Store
+Thumbs.db
+scratch/

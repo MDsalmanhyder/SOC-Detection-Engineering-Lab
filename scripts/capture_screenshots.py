@@ -1,3 +1,8 @@
+"""
+Automated Screenshot Capture Script for SOC Detection Engineering Lab.
+Uses Playwright to capture high-resolution authentic screenshots of the live web interface.
+"""
+
 import asyncio
 import os
 from playwright.async_api import async_playwright
@@ -9,7 +14,7 @@ async def capture_all():
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            executable_path=edge_path,
+            executable_path=edge_path if os.path.exists(edge_path) else None,
             headless=True
         )
         context = await browser.new_context(viewport={"width": 1920, "height": 1080})
@@ -71,7 +76,7 @@ async def capture_all():
         if await kql_button.count() > 0:
             await kql_button.click()
             await page.wait_for_timeout(800)
-            await page.screenshot(path=os.path.join(out_dir, "03b_kql_query_translation.png"))
+        await page.screenshot(path=os.path.join(out_dir, "03b_kql_query_translation.png"))
 
         await browser.close()
         print("All clean screenshots successfully captured!")

@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
+# dist (tracked so Python backend serves pre-built UI out-of-the-box)
 dist-ssr
 *.local
 
